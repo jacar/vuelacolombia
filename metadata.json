@@ -1,0 +1,5 @@
+{
+  "name": "Cazador de Vuelos Colombia | Tarifas < 200k",
+  "description": "Aplicación personal para rastreo y notificaciones de vuelos baratos en Colombia por menos de $200.000 COP.",
+  "requestFramePermissions": ["notifications"]
+}
