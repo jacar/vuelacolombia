@@ -2,7 +2,7 @@ import React from 'react';
 import { Plane, Radar, Zap, Bell, Settings, Calendar, SlidersHorizontal } from 'lucide-react';
 import { AlertNotificationItem } from '../types';
 
-export type MobileTab = 'flights' | 'radar' | 'calendar' | 'alerts' | 'settings';
+export type MobileTab = 'flights' | 'radar' | 'calendar' | 'alerts' | 'settings' | 'turbo';
 
 interface MobileBottomNavProps {
   activeTab: MobileTab;
