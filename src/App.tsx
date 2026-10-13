@@ -41,6 +41,7 @@ import { DirectSearchLinks } from './components/DirectSearchLinks';
 import { Footer } from './components/Footer';
 import { BrandLogo } from './components/BrandLogo';
 import { MultiCitySummaryCard } from './components/MultiCitySummaryCard';
+import { MobileBottomNav, MobileTab } from './components/MobileBottomNav';
 
 import {
   FlightDeal,
@@ -93,6 +94,8 @@ export default function App() {
     } catch {}
     return DEFAULT_SETTINGS;
   });
+
+  const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>('flights');
 
   // Selected route: defaults to Bogota -> Medellin (most frequent trunk route in Colombia)
   const [origin, setOrigin] = useState<string>(settings.origin || 'BOG');
@@ -434,9 +437,51 @@ export default function App() {
       />
 
       {/* Hero Header & Value Proposition - Clean White & Red Style */}
-      <div className="bg-white border-b border-red-100 pt-8 pb-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white border-b border-red-100 pt-3 md:pt-8 pb-5 md:pb-10 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+          {/* MOBILE APP HEADER STRIP */}
+          <div className="md:hidden space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[11px] font-black text-slate-800 tracking-tight">
+                  Radar 24/7 en Colombia
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-red-50 text-red-700 border border-red-200">
+                Tope &lt; $200k COP
+              </span>
+            </div>
+
+            {/* Quick Best Price Pill Banner */}
+            <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 rounded-2xl p-3 text-white shadow-md shadow-red-600/20 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-bold text-red-100 uppercase tracking-wider">
+                  Tarifa más económica hoy
+                </p>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-2xl font-black tracking-tight">
+                    {deals.length > 0 ? formatCOP(Math.min(...deals.map((d) => d.priceCOP))) : '$0 COP'}
+                  </span>
+                  <span className="text-[10px] text-red-200 font-semibold">/ trayecto</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTurboModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-white text-red-600 font-black text-xs flex items-center space-x-1 shadow-sm active:scale-95 transition-transform tap-highlight-none"
+              >
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>Turbo</span>
+              </button>
+            </div>
+          </div>
+
+          {/* DESKTOP HERO HEADER */}
+          <div className="hidden md:flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="max-w-2xl space-y-3">
               <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-black">
                 <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
@@ -570,7 +615,7 @@ export default function App() {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 w-full space-y-5 sm:space-y-8 pb-28 sm:pb-8">
         {/* Multi-tramo Itinerary Summary Card for Frequent Travelers */}
         {tripType === 'multi_city' && (
           <MultiCitySummaryCard
@@ -592,15 +637,17 @@ export default function App() {
         )}
 
         {/* 1. Date Radar Carousel */}
-        <SaturdayRadar
-          days={calendarDays}
-          selectedDate={selectedDate}
-          onSelectDate={(date) => setSelectedDate(date)}
-          priceThreshold={maxPrice}
-          origin={origin}
-          destination={destination}
-          onlySaturdays={onlySaturdays}
-        />
+        <div id="radar-section">
+          <SaturdayRadar
+            days={calendarDays}
+            selectedDate={selectedDate}
+            onSelectDate={(date) => setSelectedDate(date)}
+            priceThreshold={maxPrice}
+            origin={origin}
+            destination={destination}
+            onlySaturdays={onlySaturdays}
+          />
+        </div>
 
         {/* 2. Active Date Header with Direct Buy Shortcut and Toggles */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-3xl border border-red-100 shadow-sm">
@@ -822,6 +869,36 @@ export default function App() {
           NotificationManager.markAllAsRead();
           setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
         }}
+      />
+
+      {/* Native-style Mobile Bottom Navigation Tab Bar */}
+      <MobileBottomNav
+        activeTab={activeMobileTab}
+        onSelectTab={(tab) => {
+          setActiveMobileTab(tab);
+          if (tab === 'radar') {
+            setIsScannerModalOpen(true);
+          } else if (tab === 'alerts') {
+            setIsNotificationsOpen(true);
+          } else if (tab === 'settings') {
+            setIsSettingsModalOpen(true);
+          } else if (tab === 'turbo') {
+            setIsTurboModalOpen(true);
+          } else if (tab === 'calendar') {
+            const el = document.getElementById('radar-section');
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          } else if (tab === 'flights') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onOpenTurbo={() => setIsTurboModalOpen(true)}
+        onOpenScanner={() => setIsScannerModalOpen(true)}
+        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        isScanning={isScanning}
+        notifications={notifications}
       />
     </div>
   );

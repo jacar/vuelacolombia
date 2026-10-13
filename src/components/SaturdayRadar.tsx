@@ -51,22 +51,22 @@ export const SaturdayRadar: React.FC<SaturdayRadarProps> = ({
         </div>
 
         {/* Counter Pills */}
-        <div className="flex items-center gap-3">
-          <div className="px-3.5 py-2 rounded-2xl bg-red-50 border border-red-200 flex items-center space-x-2.5">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+          <div className="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-red-50 border border-red-200 flex items-center space-x-2">
             <Flame className="w-4 h-4 text-red-600 shrink-0" />
             <div>
-              <p className="text-[10px] uppercase font-black text-red-600 tracking-wider">Tarifas &lt; $200k</p>
-              <p className="text-sm font-black text-slate-900">
+              <p className="text-[9px] sm:text-[10px] uppercase font-black text-red-600 tracking-wider">Tarifas &lt; $200k</p>
+              <p className="text-xs sm:text-sm font-black text-slate-900">
                 {bargainsCount} de {days.length} fechas
               </p>
             </div>
           </div>
 
-          <div className="px-3.5 py-2 rounded-2xl bg-slate-50 border border-slate-200 flex items-center space-x-2.5">
+          <div className="p-2.5 sm:px-3.5 sm:py-2 rounded-2xl bg-slate-50 border border-slate-200 flex items-center space-x-2">
             <TrendingDown className="w-4 h-4 text-slate-600 shrink-0" />
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Mínimo en Vuelos</p>
-              <p className="text-sm font-black text-red-600">
+              <p className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-wider">Mínimo en Vuelos</p>
+              <p className="text-xs sm:text-sm font-black text-red-600">
                 {formatCOP(lowestOverall)}
               </p>
             </div>
@@ -74,9 +74,9 @@ export const SaturdayRadar: React.FC<SaturdayRadarProps> = ({
         </div>
       </div>
 
-      {/* Date Carousel */}
-      <div className="overflow-x-auto pb-2 scrollbar-thin">
-        <div className="flex space-x-3 min-w-max">
+      {/* Date Carousel with Mobile Touch Snap */}
+      <div className="overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory touch-pan-x-mandatory">
+        <div className="flex space-x-2 sm:space-x-3 min-w-max">
           {days.map((d) => {
             const isSelected = d.date === selectedDate;
             const isBargain = d.lowestPrice <= priceThreshold;
@@ -86,9 +86,9 @@ export const SaturdayRadar: React.FC<SaturdayRadarProps> = ({
               <button
                 key={d.date}
                 onClick={() => onSelectDate(d.date)}
-                className={`relative flex flex-col p-3.5 rounded-2xl text-left transition-all border w-44 ${
+                className={`relative flex flex-col p-2.5 sm:p-3.5 rounded-2xl text-left transition-all border w-32 sm:w-44 snap-start shrink-0 tap-highlight-none ${
                   isSelected
-                    ? 'bg-red-50/80 border-red-600 shadow-md ring-2 ring-red-600/30'
+                    ? 'bg-red-50/90 border-red-600 shadow-md ring-2 ring-red-600/30'
                     : isBargain
                     ? 'bg-white hover:bg-red-50/40 border-red-300 hover:border-red-500 shadow-xs'
                     : 'bg-white hover:bg-slate-50 border-slate-200'

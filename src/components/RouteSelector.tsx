@@ -27,6 +27,8 @@ import {
   getGoogleFlightsMultiCityUrl
 } from '../services/flightDataService';
 import { TripType, PassengerConfig, MultiCityLeg, MultiCityPreset } from '../types';
+import { MobileAirportModal } from './MobileAirportModal';
+import { MobilePassengersModal } from './MobilePassengersModal';
 
 export interface RouteSelectorProps {
   origin: string;
@@ -69,6 +71,8 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
   onSelectActiveLegIndex,
 }) => {
   const [isPassengerDropdownOpen, setIsPassengerDropdownOpen] = useState(false);
+  const [mobileAirportModalMode, setMobileAirportModalMode] = useState<'origin' | 'dest' | null>(null);
+  const [isMobilePassengersOpen, setIsMobilePassengersOpen] = useState(false);
 
   // Local fallback state for multi-city legs if not provided via props
   const [internalLegs, setInternalLegs] = useState<MultiCityLeg[]>([
@@ -517,7 +521,92 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
       {/* MODE 1 & 2: SOLO IDA O IDA Y VUELTA */}
       {tripType !== 'multi_city' && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+          {/* MOBILE APP FLIGHT BOOKING CARD */}
+          <div className="md:hidden space-y-2.5">
+            {/* Origin & Destination interactive airport card */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-2 relative flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setMobileAirportModalMode('origin')}
+                className="flex-1 text-left p-2 rounded-xl active:bg-slate-200/50 transition-colors tap-highlight-none"
+              >
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">ORIGEN</span>
+                <span className="text-2xl font-black text-red-600 block leading-tight">{origin}</span>
+                <span className="text-xs font-bold text-slate-700 truncate block">{originInfo.city}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSwap}
+                className="w-9 h-9 rounded-full bg-white border border-slate-200 shadow-sm text-red-600 flex items-center justify-center shrink-0 mx-1 active:scale-90 transition-transform tap-highlight-none"
+                aria-label="Invertir origen y destino"
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMobileAirportModalMode('dest')}
+                className="flex-1 text-right p-2 rounded-xl active:bg-slate-200/50 transition-colors tap-highlight-none"
+              >
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">DESTINO</span>
+                <span className="text-2xl font-black text-slate-900 block leading-tight">{destination}</span>
+                <span className="text-xs font-bold text-slate-700 truncate block">{destInfo.city}</span>
+              </button>
+            </div>
+
+            {/* Dates row */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">
+                  {tripType === 'round_trip' ? 'IDA' : 'FECHA'}
+                </span>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    if (e.target.value) onSelectDate(e.target.value);
+                  }}
+                  className="w-full bg-transparent text-xs font-black text-slate-900 outline-none cursor-pointer"
+                />
+              </div>
+
+              {tripType === 'round_trip' ? (
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-2.5">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">
+                    REGRESO
+                  </span>
+                  <input
+                    type="date"
+                    min={selectedDate}
+                    value={returnDate || ''}
+                    onChange={(e) => {
+                      if (e.target.value && onSelectReturnDate) {
+                        onSelectReturnDate(e.target.value);
+                      }
+                    }}
+                    className="w-full bg-transparent text-xs font-black text-slate-900 outline-none cursor-pointer"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsMobilePassengersOpen(true)}
+                  className="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-left active:bg-slate-100 transition-colors tap-highlight-none"
+                >
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">
+                    PASAJEROS
+                  </span>
+                  <span className="text-xs font-black text-slate-900 truncate block">
+                    {totalPassengers} pax{passengerConfig.pets > 0 ? ` + ${passengerConfig.pets} masc.` : ''}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* DESKTOP ROUTE SELECTOR */}
+          <div className="hidden md:grid md:grid-cols-12 gap-3 items-center">
             {/* Origin Selector */}
             <div className="md:col-span-4 relative">
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 flex items-center space-x-1">
@@ -980,6 +1069,31 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
           </div>
         )}
       </div>
+
+      {/* Mobile Airport Picker Modal */}
+      <MobileAirportModal
+        isOpen={mobileAirportModalMode !== null}
+        onClose={() => setMobileAirportModalMode(null)}
+        title={mobileAirportModalMode === 'origin' ? 'Seleccionar Ciudad de Origen' : 'Seleccionar Ciudad de Destino'}
+        selectedCode={mobileAirportModalMode === 'origin' ? origin : destination}
+        excludeCode={mobileAirportModalMode === 'origin' ? destination : origin}
+        onSelectAirport={(code) => {
+          if (mobileAirportModalMode === 'origin') {
+            onSelectRoute(code, destination);
+          } else {
+            onSelectRoute(origin, code);
+          }
+          setMobileAirportModalMode(null);
+        }}
+      />
+
+      {/* Mobile Passengers Sheet Modal */}
+      <MobilePassengersModal
+        isOpen={isMobilePassengersOpen}
+        onClose={() => setIsMobilePassengersOpen(false)}
+        passengerConfig={passengerConfig}
+        onSelectPassengers={onSelectPassengers}
+      />
     </div>
   );
 };

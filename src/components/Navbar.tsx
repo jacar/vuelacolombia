@@ -56,8 +56,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        {/* Desktop Action Controls */}
+        <div className="hidden md:flex items-center space-x-2 sm:space-x-3">
           {/* Turbo Búsqueda Forzada Button */}
           <button
             onClick={onOpenTurbo}
@@ -65,8 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Lanzar Turbo Búsqueda Forzada"
           >
             <Zap className="w-4 h-4 fill-current text-red-600 animate-pulse" />
-            <span className="hidden sm:inline">Turbo Búsqueda</span>
-            <span className="sm:hidden">Turbo</span>
+            <span>Turbo Búsqueda</span>
           </button>
 
           {/* Always-On Live Radar Button */}
@@ -89,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               ></span>
             </span>
-            <Radar className={`w-4 h-4 hidden md:inline ${isScanning ? 'text-white' : 'text-red-600'}`} />
+            <Radar className={`w-4 h-4 ${isScanning ? 'text-white' : 'text-red-600'}`} />
             <span>{isScanning ? 'Escaneo Activo' : 'Radar'}</span>
           </button>
 
@@ -127,6 +126,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Configuración de alertas y filtros"
           >
             <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+          </button>
+        </div>
+
+        {/* Mobile App Bar Actions */}
+        <div className="flex md:hidden items-center space-x-1.5">
+          <button
+            onClick={onToggleSound}
+            className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200 tap-highlight-none"
+            aria-label="Silenciar o activar alertas"
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4 text-red-600" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-slate-400" />
+            )}
+          </button>
+
+          <button
+            onClick={onOpenSettings}
+            className="p-2 rounded-xl bg-slate-50 text-slate-600 border border-slate-200 tap-highlight-none"
+            aria-label="Ajustes"
+          >
+            <Settings className="w-4 h-4 text-slate-700" />
           </button>
         </div>
       </div>

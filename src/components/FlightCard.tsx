@@ -48,6 +48,7 @@ export const FlightCard: React.FC<FlightCardProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showMobileOptions, setShowMobileOptions] = useState(false);
 
   const isBargain = deal.priceCOP <= priceThreshold;
   const savingsVsThreshold = priceThreshold - deal.priceCOP;
@@ -136,7 +137,226 @@ export const FlightCard: React.FC<FlightCardProps> = ({
         </div>
       )}
 
-      <div className="p-5 sm:p-6">
+      {/* MOBILE APP VIEW */}
+      <div className="sm:hidden p-3.5 space-y-2.5">
+        {/* Row 1: Airline Badge & Fare Tag & Bargain Flag */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1.5">
+            <span className={`px-2 py-0.5 rounded-lg text-[11px] font-black shadow-xs ${colors.badge}`}>
+              {deal.airline}
+            </span>
+            <span className="text-[10px] font-mono text-slate-500 font-bold bg-slate-100 px-1.5 py-0.5 rounded">
+              {deal.flightNumber}
+            </span>
+            <span className="text-[10px] text-slate-500 font-bold bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded">
+              {deal.fareClass}
+            </span>
+          </div>
+          {isBargain ? (
+            <span className="flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-red-600 text-white font-black text-[10px] shadow-xs">
+              <Flame className="w-3 h-3 fill-current" />
+              <span>&lt; $200k</span>
+            </span>
+          ) : (
+            <span className="text-[10px] text-slate-400 font-medium">
+              {deal.dayOfWeekName}
+            </span>
+          )}
+        </div>
+
+        {/* Row 2: Flight Route Schedule */}
+        <div className="flex items-center justify-between pt-1">
+          {/* Departure */}
+          <div className="text-left w-20">
+            <p className="text-xl font-black text-slate-900 tracking-tight leading-tight">
+              {deal.departureTime}
+            </p>
+            <p className="text-xs font-black text-red-600">{deal.originCode}</p>
+            <p className="text-[10px] text-slate-400 font-medium truncate">{deal.originCity}</p>
+          </div>
+
+          {/* Route Line & Duration */}
+          <div className="flex-1 px-2 flex flex-col items-center">
+            <span className="text-[10px] font-bold text-slate-400 flex items-center space-x-1 mb-0.5">
+              <Clock className="w-3 h-3" />
+              <span>{deal.duration}</span>
+            </span>
+            <div className="w-full flex items-center relative">
+              <div className={`h-2 w-2 rounded-full ${colors.dot}`}></div>
+              <div className="h-[2px] w-full bg-slate-200 relative">
+                {deal.stops > 0 && (
+                  <div className="absolute left-1/2 -top-0.5 -translate-x-1/2 w-2 h-2 rounded-full bg-amber-500"></div>
+                )}
+              </div>
+              <div className="h-2 w-2 rounded-full bg-red-600"></div>
+            </div>
+            <span className="text-[10px] font-black mt-0.5 text-center">
+              {deal.stops === 0 ? (
+                <span className="text-emerald-700">Directo</span>
+              ) : (
+                <span className="text-amber-800">1 escala ({deal.stopAirport})</span>
+              )}
+            </span>
+          </div>
+
+          {/* Arrival */}
+          <div className="text-right w-20">
+            <p className="text-xl font-black text-slate-900 tracking-tight leading-tight">
+              {deal.arrivalTime}
+            </p>
+            <p className="text-xs font-black text-slate-800">{deal.destinationCode}</p>
+            <p className="text-[10px] text-slate-400 font-medium truncate">{deal.destinationCity}</p>
+          </div>
+        </div>
+
+        {/* Row 3: Baggage & Seats */}
+        <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5 border-t border-slate-100">
+          <div className="flex items-center space-x-2">
+            <span className="flex items-center space-x-1">
+              <Briefcase className="w-3 h-3 text-slate-400" />
+              <span className="text-[10px] font-semibold">{deal.baggageIncluded}</span>
+            </span>
+            {deal.seatsRemaining && deal.seatsRemaining <= 4 && (
+              <span className="text-[10px] font-black text-red-600 bg-red-50 px-1.5 py-0.2 rounded">
+                ¡{deal.seatsRemaining} cupos!
+              </span>
+            )}
+          </div>
+
+          {/* Group Breakdown Toggle if multi-pax */}
+          {hasExtraPassengersOrPets && (
+            <button
+              type="button"
+              onClick={() => setShowBreakdown((p) => !p)}
+              className="text-[10px] text-red-600 font-bold flex items-center space-x-0.5"
+            >
+              <span>Grupo: {formatCOP(pricing.grandTotal)}</span>
+              {showBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          )}
+        </div>
+
+        {/* Extra breakdown if expanded */}
+        {showBreakdown && hasExtraPassengersOrPets && (
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] space-y-1">
+            <div className="flex justify-between font-bold">
+              <span>Total {pricing.adultsCount} Adultos:</span>
+              <span>{formatCOP(pricing.adultsSubtotal)}</span>
+            </div>
+            {pricing.childrenCount > 0 && (
+              <div className="flex justify-between text-slate-600">
+                <span>{pricing.childrenCount} Niños (-15%):</span>
+                <span>{formatCOP(pricing.childrenSubtotal)}</span>
+              </div>
+            )}
+            {pricing.petsCount > 0 && (
+              <div className="flex justify-between text-red-700 font-bold">
+                <span>{pricing.petsCount} Mascotas:</span>
+                <span>{formatCOP(pricing.petsSubtotal)}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Row 4: Price & Primary Buy Button */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
+          <div>
+            {deal.originalPriceCOP && (
+              <p className="text-[10px] text-slate-400 line-through">
+                {formatCOP(deal.originalPriceCOP)}
+              </p>
+            )}
+            <div className="flex items-baseline space-x-1">
+              <span className={`text-xl font-black ${isBargain ? 'text-red-600' : 'text-slate-900'}`}>
+                {formatCOP(deal.priceCOP)}
+              </span>
+              <span className="text-[10px] text-slate-400 font-semibold">/ pax</span>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1.5">
+            <button
+              type="button"
+              onClick={() => setShowMobileOptions((p) => !p)}
+              className="p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 tap-highlight-none"
+              title="Más opciones de compra"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${showMobileOptions ? 'rotate-180' : ''}`} />
+            </button>
+
+            <a
+              href={deal.purchaseLinks.googleFlights}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`px-4 py-2.5 rounded-xl font-black text-xs flex items-center space-x-1.5 shadow-sm transition-transform active:scale-95 ${
+                isBargain
+                  ? 'bg-red-600 text-white shadow-red-600/30'
+                  : 'bg-slate-900 text-white'
+              }`}
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>Comprar</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+
+        {/* Row 5: Mobile Expandable Options (Skyscanner, Airline Direct, WhatsApp, Test Alert) */}
+        {showMobileOptions && (
+          <div className="pt-2 border-t border-slate-100 space-y-1.5 animate-in fade-in">
+            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+              <a
+                href={deal.purchaseLinks.skyscanner}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-slate-50 text-slate-800 font-bold border border-slate-200 flex items-center justify-center space-x-1"
+              >
+                <span>Skyscanner</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+              <a
+                href={deal.purchaseLinks.airlineDirect}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-slate-50 text-slate-800 font-bold border border-slate-200 flex items-center justify-center space-x-1"
+              >
+                <span>{deal.airline} Oficial</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+            </div>
+
+            <div className="flex items-center space-x-1.5 pt-1">
+              <button
+                type="button"
+                onClick={handleShareWhatsapp}
+                className="flex-1 py-1.5 px-2 rounded-xl bg-emerald-50 text-emerald-800 font-bold text-[11px] border border-emerald-200 flex items-center justify-center space-x-1"
+              >
+                <Share2 className="w-3 h-3" />
+                <span>WhatsApp</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="flex-1 py-1.5 px-2 rounded-xl bg-slate-50 text-slate-700 font-bold text-[11px] border border-slate-200 flex items-center justify-center space-x-1"
+              >
+                {copied ? <Check className="w-3 h-3 text-red-600" /> : <Copy className="w-3 h-3" />}
+                <span>{copied ? 'Copiado' : 'Copiar'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onTestAlert(deal)}
+                className="p-2 rounded-xl bg-slate-50 text-slate-700 hover:text-red-600 border border-slate-200"
+                title="Probar alerta de este vuelo"
+              >
+                <BellRing className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* DESKTOP VIEW */}
+      <div className="hidden sm:block p-5 sm:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           {/* Airline, Route & Schedule */}
           <div className="space-y-3.5 flex-1">
